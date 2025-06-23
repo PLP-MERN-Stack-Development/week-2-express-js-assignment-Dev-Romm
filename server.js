@@ -1,71 +1,47 @@
-// server.js - Starter Express server for Week 2 assignment
-
-// Import required modules
+// server.js
+require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser');
-const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+const productRouter = require('./routes/routes');
+const validateProduct = require('./middleware/validateProduct');
+const authenticate = require('./middleware/auth');
 
-// Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware setup
-app.use(bodyParser.json());
+// In-memory products data
+const products = require('./data/products');
 
-// Sample in-memory products database
-let products = [
-  {
-    id: '1',
-    name: 'Laptop',
-    description: 'High-performance laptop with 16GB RAM',
-    price: 1200,
-    category: 'electronics',
-    inStock: true
-  },
-  {
-    id: '2',
-    name: 'Smartphone',
-    description: 'Latest model with 128GB storage',
-    price: 800,
-    category: 'electronics',
-    inStock: true
-  },
-  {
-    id: '3',
-    name: 'Coffee Maker',
-    description: 'Programmable coffee maker with timer',
-    price: 50,
-    category: 'kitchen',
-    inStock: false
-  }
-];
+// Middleware
+app.use(express.json());
 
-// Root route
-app.get('/', (req, res) => {
-  res.send('Welcome to the Product API! Go to /api/products to see all products.');
+app.use((req, res, next) => {
+  console.log(`${req.method} request to '${req.url}'`);
+  next();
 });
 
-// TODO: Implement the following routes:
-// GET /api/products - Get all products
-// GET /api/products/:id - Get a specific product
-// POST /api/products - Create a new product
-// PUT /api/products/:id - Update a product
-// DELETE /api/products/:id - Delete a product
-
-// Example route implementation for GET /api/products
-app.get('/api/products', (req, res) => {
-  res.json(products);
+// Optional login endpoint to generate token
+app.post('/login', (req, res) => {
+  const user = { username: 'admin' }; // dummy user
+  const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
+  res.json({ token });
 });
 
-// TODO: Implement custom middleware for:
-// - Request logging
-// - Authentication
-// - Error handling
+// Secure all product routes
+app.use(authenticate);
 
-// Start the server
+// Product routes
+app.use('/', productRouter(products, validateProduct));
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
+});
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
 
-// Export the app for testing purposes
-module.exports = app; 
+module.exports = app;
