@@ -1,63 +1,362 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19821918&assignment_repo_type=AssignmentRepo)
-# Express.js RESTful API Assignment
+# Product API
 
-This assignment focuses on building a RESTful API using Express.js, implementing proper routing, middleware, and error handling.
+A simple Express.js REST API for managing products, with authentication, validation, filtering, pagination, search, and statistics.
 
-## Assignment Overview
-
-You will:
-1. Set up an Express.js server
-2. Create RESTful API routes for a product resource
-3. Implement custom middleware for logging, authentication, and validation
-4. Add comprehensive error handling
-5. Develop advanced features like filtering, pagination, and search
+---
 
 ## Getting Started
 
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Install dependencies:
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v14 or higher)
+- [npm](https://www.npmjs.com/)
+
+### Installation
+
+1. **Clone the repository:**
+   ```
+   git clone <repository-url>
+   cd <project-folder>
+   ```
+
+2. **Install dependencies:**
    ```
    npm install
    ```
-4. Run the server:
+
+3. **Configure environment variables:**
+   - Copy `.env.example` to `.env` and set your values:
+     ```
+     PORT=3000
+     JWT_SECRET=your_jwt_secret
+     ```
+
+4. **Start the server:**
    ```
    npm start
    ```
+   The server will run at `http://localhost:3000` (or your specified port).
 
-## Files Included
+---
 
-- `Week2-Assignment.md`: Detailed assignment instructions
-- `server.js`: Starter Express.js server file
-- `.env.example`: Example environment variables file
+## Authentication
 
-## Requirements
+All product endpoints require a JWT token in the `Authorization` header.
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Postman, Insomnia, or curl for API testing
+- **Login to get a token:**
+  ```
+  POST /login
+  ```
+  **Response:**
+  ```json
+  {
+    "token": "<your_jwt_token>"
+  }
+  ```
+
+- **Use the token in requests:**
+  ```
+  Authorization: Bearer <your_jwt_token>
+  ```
+
+---
 
 ## API Endpoints
 
-The API will have the following endpoints:
+### 1. **Login**
 
-- `GET /api/products`: Get all products
-- `GET /api/products/:id`: Get a specific product
-- `POST /api/products`: Create a new product
-- `PUT /api/products/:id`: Update a product
-- `DELETE /api/products/:id`: Delete a product
+- **POST /login**
+  - Returns a JWT token for authentication.
 
-## Submission
+---
 
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
+### 2. **Products**
 
-1. Complete all the required API endpoints
-2. Implement the middleware and error handling
-3. Document your API in the README.md
-4. Include examples of requests and responses
+#### **Get all products (with filtering & pagination)**
+- **GET /api/products**
+- **Query Parameters:**
+  - `category` (optional): Filter by category
+  - `page` (optional): Page number (default: 1)
+  - `limit` (optional): Items per page (default: all)
+- **Example:**
+  ```
+  GET /api/products?category=electronics&page=1&limit=2
+  ```
+- **Response:**
+  ```json
+  {
+    "total": 5,
+    "page": 1,
+    "limit": 2,
+    "products": [
+      { "id": "...", "name": "...", ... }
+    ]
+  }
+  ```
 
-## Resources
+#### **Search products by name**
+- **GET /api/products/search?name=term**
+- **Example:**
+  ```
+  GET /api/products/search?name=laptop
+  ```
+- **Response:**
+  ```json
+  [
+    { "id": "...", "name": "Laptop", ... }
+  ]
+  ```
 
-- [Express.js Documentation](https://expressjs.com/)
-- [RESTful API Design Best Practices](https://restfulapi.net/)
-- [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
+#### **Get product statistics**
+- **GET /api/products/stats**
+- **Response:**
+  ```json
+  {
+    "electronics": 3,
+    "kitchen": 2
+  }
+  ```
+
+#### **Get a product by ID**
+- **GET /api/products/:id**
+- **Response:**
+  ```json
+  { "id": "...", "name": "...", ... }
+  ```
+
+#### **Create a new product**
+- **POST /api/products**
+- **Body:**
+  ```json
+  {
+    "name": "New Product",
+    "description": "Description here",
+    "price": 100,
+    "category": "electronics",
+    "inStock": true
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "id": "...",
+    "name": "New Product",
+    ...
+  }
+  ```
+
+#### **Update a product**
+- **PUT /api/products/:id**
+- **Body:** (same as POST)
+- **Response:** Updated product object
+
+#### **Delete a product**
+- **DELETE /api/products/:id**
+- **Response:** `204 No Content` if successful
+
+---
+
+## Example Requests
+
+**Get all products:**
+```bash
+curl -H "Authorization: Bearer <your_jwt_token>" http://localhost:3000/api/products
+```
+
+**Create a product:**
+```bash
+curl -X POST http://localhost:3000/api/products \
+  -H "Authorization: Bearer <your_jwt_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tablet","description":"A new tablet","price":250,"category":"electronics","inStock":true}'
+```
+
+---
+
+## Notes
+
+- All endpoints (except `/login`) require a valid JWT token.
+- Products are stored in-memory; changes are not persisted after server restart.
+- For development/testing only.
+
+---
+```# Product API
+
+A simple Express.js REST API for managing products, with authentication, validation, filtering, pagination, search, and statistics.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v14 or higher)
+- [npm](https://www.npmjs.com/)
+
+### Installation
+
+1. **Clone the repository:**
+   ```
+   git clone <repository-url>
+   cd <project-folder>
+   ```
+
+2. **Install dependencies:**
+   ```
+   npm install
+   ```
+
+3. **Configure environment variables:**
+   - Copy `.env.example` to `.env` and set your values:
+     ```
+     PORT=3000
+     JWT_SECRET=your_jwt_secret
+     ```
+
+4. **Start the server:**
+   ```
+   npm start
+   ```
+   The server will run at `http://localhost:3000` (or your specified port).
+
+---
+
+## Authentication
+
+All product endpoints require a JWT token in the `Authorization` header.
+
+- **Login to get a token:**
+  ```
+  POST /login
+  ```
+  **Response:**
+ ```json
+  {
+    "token": "<your_jwt_token>"
+  }
+  ```
+
+- **Use the token in requests:**
+  ```
+  Authorization: Bearer <your_jwt_token>
+  ```
+
+---
+
+## API Endpoints
+
+### 1. **Login**
+
+- **POST /login**
+  - Returns a JWT token for authentication.
+
+---
+
+### 2. **Products**
+
+#### **Get all products (with filtering & pagination)**
+- **GET /api/products**
+- **Query Parameters:**
+  - `category` (optional): Filter by category
+  - `page` (optional): Page number (default: 1)
+  - `limit` (optional): Items per page (default: all)
+- **Example:**
+  ```
+  GET /api/products?category=electronics&page=1&limit=2
+  ```
+- **Response:**
+  ```json
+  {
+    "total": 5,
+    "page": 1,
+    "limit": 2,
+    "products": [
+      { "id": "...", "name": "...", ... }
+    ]
+  }
+  ```
+
+#### **Search products by name**
+- **GET /api/products/search?name=term**
+- **Example:**
+  ```
+  GET /api/products/search?name=laptop
+  ```
+- **Response:**
+  ```json
+  [
+    { "id": "...", "name": "Laptop", ... }
+  ]
+  ```
+
+#### **Get product statistics**
+- **GET /api/products/stats**
+- **Response:**
+  ```json
+  {
+    "electronics": 3,
+    "kitchen": 2
+  }
+  ```
+
+#### **Get a product by ID**
+- **GET /api/products/:id**
+- **Response:**
+  ```json
+  { "id": "...", "name": "...", ... }
+  ```
+
+#### **Create a new product**
+- **POST /api/products**
+- **Body:**
+  ```json
+  {
+    "name": "New Product",
+    "description": "Description here",
+    "price": 100,
+    "category": "electronics",
+    "inStock": true
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "id": "...",
+    "name": "New Product",
+    ...
+  }
+  ```
+
+#### **Update a product**
+- **PUT /api/products/:id**
+- **Body:** (same as POST)
+- **Response:** Updated product object
+
+#### **Delete a product**
+- **DELETE /api/products/:id**
+- **Response:** `204 No Content` if successful
+
+---
+
+## Example Requests
+
+**Get all products:**
+```bash
+curl -H "Authorization: Bearer <your_jwt_token>" http://localhost:3000/api/products
+```
+
+**Create a product:**
+```bash
+curl -X POST http://localhost:3000/api/products \
+  -H "Authorization: Bearer <your_jwt_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Tablet","description":"A new tablet","price":250,"category":"electronics","inStock":true}'
+```
+
+---
+
+## Notes
+
+- All endpoints (except `/login`) require a valid JWT token.
+- Products are stored in-memory; changes are not persisted after server restart.
+- For development/testing
